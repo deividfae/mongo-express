@@ -1,0 +1,42 @@
+version: '3.8'
+
+volumes:
+  mongo_vol:
+
+networks:
+  mongo_net:
+    driver: bridge
+  
+services:
+  db-mongo:
+    image: mongo:4.4.3
+    #ports:
+    #  - 27017:27017
+    networks:
+      - mongo_net
+    volumes:
+      - mongo_vol:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongouser
+      MONGO_INITDB_ROOT_PASSWORD: mongopwd 
+  mongoexpress:
+    image: deividfae/mongo-express:v1
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+    ports:
+      - 8081:8081
+    networks:
+      - mongo_net
+    depends_on:
+      - db-mongo
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://mongouser:mongopwd@db-mongo:27017/admin
+      ME_CONFIG_MONGODB_SERVER: db-mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_AUTH_USERNAME: mongouser
+      ME_CONFIG_MONGODB_AUTH_PASSWORD: mongopwd
+      ME_CONFIG_BASICAUTH: true
+      ME_CONFIG_BASICAUTH_USERNAME: adminuser
+      ME_CONFIG_BASICAUTH_PASSWORD: admin@pwd
+      ME_CONFIG_SITE_SESSIONSECRET: admin@pwd
